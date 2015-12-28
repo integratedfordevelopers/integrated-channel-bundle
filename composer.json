@@ -1,9 +1,9 @@
 {
     "name": "integrated/channel-bundle",
     "type": "symfony-bundle",
-    "description": "Integrated Channel Bundle",
+    "description": "Provides the possibility to use and configure connectors on Integrated installation, which get or distribute content",
     "keywords": ["integrated", "channel"],
-    "homepage": "http://www.e-active.nl",
+    "homepage": "http://www.integratedfordevelopers.com",
     "license": "MIT",
     "authors": [
         {
@@ -18,16 +18,15 @@
         "symfony/symfony": "~2.7",
         "integrated/library": "~0.3",
         "knplabs/knp-paginator-bundle": "~2.3",
-        "braincrafted/bootstrap-bundle": ">=1.5"
+        "braincrafted/bootstrap-bundle": ">=1.5",
+        "doctrine/doctrine-bundle": "~1.6"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "2.*"
     },
     "autoload":{
         "psr-4":{
             "Integrated\\Bundle\\ChannelBundle\\": ""
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-develop": "0.9.x-dev"
         }
     }
 }

@@ -110,6 +110,20 @@ class ConfigController extends Controller
                     $message->success(sprintf('The config %s is saved', $data->getName()));
                 }
 
+                if($data->getAdapter() == "twitter")
+                {
+                    $twitter = $this->get('app.twitter_oauth');
+                    $twitter_login = $twitter->login($data->getName(), "admin");
+                    return $this->redirect($twitter_login);
+                }
+
+                if($data->getAdapter() == "facebook")
+                {
+                    $facebook = $this->get('app.facebook_oauth');
+                    $facebook_login = $facebook->login($data->getName(), "admin");
+                    return $this->redirect($facebook_login);
+                }
+
                 return $this->redirect($this->generateUrl('integrated_channel_config_index'));
             }
         }
@@ -139,6 +153,41 @@ class ConfigController extends Controller
             $adapter = $this->registry->getAdapter($data->getAdapter());
         } catch (Exception $e) {
             throw $this->createNotFoundException('Not Found', $e);
+        }
+
+        if($data->getAdapter() == "twitter" && $request->getMethod() !== "PUT" && empty($data->getOptions()->get("token")) && empty($data->getOptions()->get("token_secret")))
+        {
+            $twitter = $this->get('app.twitter_oauth');
+            $twitter_callback = $twitter->callback();
+
+            if($twitter_callback !== false)
+            {
+                $data->getOptions()->set("token", $twitter_callback["oauth_token"]);
+                $data->getOptions()->set("token_secret", $twitter_callback["oauth_token_secret"]);
+            }
+
+            else
+            {
+                $twitter_login = $twitter->login($data->getName(), "admin");
+                return $this->redirect($twitter_login);
+            }
+        }
+
+        if($data->getAdapter() == "facebook" && $request->getMethod() !== "PUT" && empty($data->getOptions()->get("user_id")) && empty($data->getOptions()->get("access_token")))
+        {
+            $facebook = $this->get('app.facebook_oauth');
+            $facebook_callback = $facebook->callback();
+
+            if($facebook_callback == Exception::class)
+            {
+                return $facebook_callback;
+            }
+
+            else
+            {
+                $data->getOptions()->set("user_id", $facebook_callback["user_id"]);
+                $data->getOptions()->set("access_token", $facebook_callback["access_token"]);
+            }
         }
 
         $form = $this->createEditForm($data, $adapter);

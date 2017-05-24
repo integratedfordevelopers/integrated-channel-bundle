@@ -25,7 +25,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+
+use Integrated\Bundle\ChannelBundle\Event\ConnectorCalledEvent;
 
 /**
  * @author Jan Sanne Mulder <jansanne@e-active.nl>
@@ -110,6 +113,13 @@ class ConfigController extends Controller
                     $message->success(sprintf('The config %s is saved', $data->getName()));
                 }
 
+                $eventDispatcher = $this->get('event_dispatcher');
+                $event = new ConnectorCalledEvent($data->getAdapter(), $data->getName(), $data->getOptions(), __FUNCTION__);
+                $eventDispatcher->dispatch(ConnectorCalledEvent::CONNECTOR, $event);
+                if ($event->getResponse()) {
+                    return $this->redirect($event->getResponse());
+                }
+
                 return $this->redirect($this->generateUrl('integrated_channel_config_index'));
             }
         }
@@ -139,6 +149,18 @@ class ConfigController extends Controller
             $adapter = $this->registry->getAdapter($data->getAdapter());
         } catch (Exception $e) {
             throw $this->createNotFoundException('Not Found', $e);
+        }
+
+        if ($request->getMethod() !== "PUT") {
+            $eventDispatcher = $this->get('event_dispatcher');
+            $event = new ConnectorCalledEvent($data->getAdapter(), $data->getName(), $data->getOptions(), __FUNCTION__);
+            $eventDispatcher->dispatch(ConnectorCalledEvent::CONNECTOR, $event);
+
+            if (!empty($event->getResponse()) && filter_var($event->getResponse(), FILTER_VALIDATE_URL) === false) {
+                $event->getResponse();
+            } elseif (filter_var($event->getResponse(), FILTER_VALIDATE_URL) === true) {
+                return $this->redirect($event->getResponse());
+            }
         }
 
         $form = $this->createEditForm($data, $adapter);

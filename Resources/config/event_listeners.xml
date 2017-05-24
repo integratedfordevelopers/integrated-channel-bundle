@@ -17,6 +17,12 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
+        <service id="integrated_channel.event_listener.connector_called_subscriber" class="Integrated\Bundle\ChannelBundle\EventListener\ConnectorCalledSubscriber">
+            <argument type="service" id="app.twitter_oauth" />
+            <argument type="service" id="app.facebook_oauth" />
+            <tag name="kernel.event_listener" event="integrated_channel.connector" method="onConnectorCalled" />
+        </service>
+
     </services>
 
 </container>

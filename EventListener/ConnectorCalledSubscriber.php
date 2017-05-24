@@ -59,6 +59,9 @@ class ConnectorCalledSubscriber implements EventSubscriberInterface
         $connector = $event->getConnector();
         $connectorName = $event->getConnectorName();
 
+        dump($connector);
+        dump($event->getControllerAction());
+
         $socialConnectors = array("twitter", "facebook");
 
         if (!in_array($connector, $socialConnectors, true)) {
@@ -75,15 +78,20 @@ class ConnectorCalledSubscriber implements EventSubscriberInterface
                     break;
             }
         } elseif ($event->getControllerAction() == "editAction") {
+            dump("editAction");
             $options = $event->getOptions();
             switch ($connector) {
                 case "twitter":
+                    dump("twitter case");
+                    dump($options->get("token"));
                     if (empty($options->get("token")) && empty($options->get("token_secret"))) {
                         $callback = $this->twitter->callback($options, $connectorName);
-
+                        dump("in empty if");
                         if ($callback == false) {
+                            dump("false set redirect");
                             $event->setResponse($this->twitter->login($connectorName, "admin"));
                         } else {
+                            dump("set fields");
                             $token = $callback;
                             $options->set("token", $token["oauth_token"]);
                             $options->set("token_secret", $token["oauth_token_secret"]);

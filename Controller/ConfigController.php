@@ -152,18 +152,13 @@ class ConfigController extends Controller
         }
 
         if ($request->getMethod() !== "PUT") {
-            dump("in if");
-
-            dump(__FUNCTION__);
             $eventDispatcher = $this->get('event_dispatcher');
             $event = new ConnectorCalledEvent($data->getAdapter(), $data->getName(), $data->getOptions(), __FUNCTION__);
             $eventDispatcher->dispatch(ConnectorCalledEvent::CONNECTOR, $event);
-            dump("dispatch event");
+
             if (!empty($event->getResponse()) && filter_var($event->getResponse(), FILTER_VALIDATE_URL) === false) {
-                dump($event->getResponse());
                 $event->getResponse();
             } elseif (filter_var($event->getResponse(), FILTER_VALIDATE_URL) === true) {
-                dump($event->getResponse());
                 return $this->redirect($event->getResponse());
             }
         }
